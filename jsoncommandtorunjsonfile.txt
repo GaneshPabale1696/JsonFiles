@@ -1,0 +1,159 @@
+F:\JsonFiles>json-server Student.json
+
+  \{^_^}/ hi!
+
+  Loading Student.json
+  Done
+
+  Resources
+  http://localhost:3000/students
+
+  Home
+  http://localhost:3000
+
+  Type s + enter at any time to create a snapshot of the database
+
+Post Data:-
+******************************************
+[
+    {
+        "id": 1,
+        "name": "john",
+        "location": "india",
+        "phone": "1234567890",
+        "courses": [
+            "Java",
+            "Selenium"
+        ]
+    }
+]
+
+*********************************************
+chai assertions
+
+pm.test("status code is 200", () => {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Successful GET request", ()=> {
+pm.expect(pm.response.code).to.be.oneOf([200,201]);
+});
+
+Check the headers 
+*****************
+Check that a response header is present:
+pm.test("Content-Type header is present", () => {
+    pm.response.to.have.header("Content-Type");
+});
+
+Test for a response header having a particular value:
+pm.test("Content-Type header is application/json", () => {
+    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json; charset=utf-8');
+}); 
+
+pm.test("Expires header is application/json", () => {
+    pm.expect(pm.response.headers.get('Expires')).to.eql('-1');
+}); 
+
+****************************************************
+Testing Cookies
+************************
+Test if a cookie is present in the response:
+
+pm.test("Cookie 'Language' is present", () =>{
+    pm.expect(pm.cookies.has('language')).to.be.true;
+});
+
+Test for a particular cookie value:
+pm.test("Cookie language has value 1", () => {
+    pm.expect(pm.cookies.get('language')).to.eql('en-gb');
+});
+
+***************************************************
+Testing Response Times
+*************************************
+Test for the response time to be within a specified range:
+
+pm.test("Response time is less than 200ms", () => {
+    pm.expect(pm.response.responseTime).to.be.below/above(200);
+});
+
+
+***********************************************************
+//Asserting a value type
+const jsonData = pm.response.json();
+pm.test("Test data type of the response", () => {
+    pm.expect(jsonData).to.be.an("object");
+    pm.expect(jsonData.name).to.be.a("string");
+    pm.expect(jsonData.id).to.be.a("string");
+    pm.expect(jsonData.courses).to.be.an("array");
+});
+
+***********************************************************
+//Asserting Array properties
+pm.test("Test data type of the response", () => {
+    //courses includes "Java"
+    pm.expect(jsonData.courses).to.include("Java");
+    //courses array must include all listed 
+    pm.expect(jsonData.courses).to.have.members(["Java","Selenium"]);
+});
+
+**********************************************************
+
+//validating JSON fields in Response 
+pm.test("values of fields in response" , () => {
+    pm.expect(jsonData.id).to.eql(1);
+    pm.expect(jsonData.name).to.eql("john");
+    pm.expect(jsonData.location).to.eql("india");
+    pm.expect(jsonData.phone).to.eql("1234567890");
+   pm.expect(jsonData.courses[0]).to.eql("Java");
+   pm.expect(jsonData.courses[1]).to.eql("Selenium"); 
+});
+
+**********************************************************
+//JSON Schema validation 
+var Schema= {
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "courses": {
+          "type": "array",
+          "items": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "location",
+        "phone",
+        "courses"
+      ]
+    }
+  ]
+}
+
+pm.test('Schema is valid',  () => {
+    pm.expect(tv4.validate(jsonData,Schema)).to.be.true;
+});
